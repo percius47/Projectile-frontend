@@ -1,7 +1,7 @@
 // src/app/projects/[id]/page.tsx
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,8 +12,8 @@ import RequirementService, {
   UpdateRequirementData,
 } from "@/services/requirementService";
 import RfqService, { Rfq } from "@/services/rfqService";
-import QuoteService from "@/services/quoteService";
-import DocumentService from "@/services/documentService";
+import QuoteService, { Quote } from "@/services/quoteService";
+import DocumentService, { Document } from "@/services/documentService";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ResponsiveNavigation from "@/components/ResponsiveNavigation";
 import { formatDate } from "@/utils/dateUtils";
@@ -27,7 +27,7 @@ export default function ProjectDetailPage({
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [rfqs, setRfqs] = useState<Rfq[]>([]);
   const [closedRfqs, setClosedRfqs] = useState<Rfq[]>([]); // Add this state
-  const [rfqQuotes, setRfqQuotes] = useState<{ [key: number]: any[] }>({});
+  const [rfqQuotes, setRfqQuotes] = useState<{ [key: number]: Quote[] }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -50,7 +50,7 @@ export default function ProjectDetailPage({
   // Document upload state
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   // Editing requirement state
   const [editingRequirementId, setEditingRequirementId] = useState<
@@ -73,15 +73,7 @@ export default function ProjectDetailPage({
   );
   const projectId = parseInt(unwrappedParams.id);
 
-  useEffect(() => {
-    if (!isNaN(projectId)) {
-      fetchProject();
-      fetchRequirements();
-      fetchRfqs();
-    }
-  }, [projectId]);
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const response = await ProjectService.getProjectById(projectId);
       setProject(response.project);
@@ -97,7 +89,7 @@ export default function ProjectDetailPage({
           projectId
         );
         setDocuments(docResponse.documents);
-      } catch (docErr) {
+      } catch {
         // Not critical if documents fail to load
         setDocuments([]);
       }
@@ -106,9 +98,9 @@ export default function ProjectDetailPage({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch project");
     }
-  };
+  }, [projectId]);
 
-  const fetchRequirements = async () => {
+  const fetchRequirements = useCallback(async () => {
     try {
       const response = await RequirementService.getRequirementsByProjectId(
         projectId
@@ -120,9 +112,9 @@ export default function ProjectDetailPage({
         err instanceof Error ? err.message : "Failed to fetch requirements"
       );
     }
-  };
+  }, [projectId]);
 
-  const fetchRfqs = async () => {
+  const fetchRfqs = useCallback(async () => {
     try {
       const response = await RfqService.getRfqsByProjectId(projectId);
       // Filter open RFQs
@@ -137,19 +129,19 @@ export default function ProjectDetailPage({
 
       // Fetch quotes for all RFQs (both open and closed)
       const allRfqs = [...response.rfqs, ...closedRfqsResponse.rfqs];
-      const quotesData: { [key: number]: any[] } = {};
+      const quotesData: { [key: number]: Quote[] } = {};
       for (const rfq of allRfqs) {
         try {
           const quotesResponse = await QuoteService.getQuotesByRfqId(rfq.id);
           quotesData[rfq.id] = quotesResponse.quotes;
-        } catch (err) {
+        } catch {
           quotesData[rfq.id] = [];
         }
       }
       setRfqQuotes(quotesData);
 
       setError("");
-    } catch (err) {
+    } catch {
       // RFQs might not be available for all users, so we won&apos;t set an error here
       setRfqs([]);
       setClosedRfqs([]);
@@ -157,7 +149,7 @@ export default function ProjectDetailPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
 
   const handleUpdateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -416,8 +408,6 @@ export default function ProjectDetailPage({
           user={user || undefined}
           onLogout={handleLogout}
           navigationItems={navigationItems}
-          projectName={project?.name}
-          projectId={projectId}
         />
 
         {/* Main Content */}
@@ -744,7 +734,7 @@ export default function ProjectDetailPage({
                                         </h4>
                                         <div className="space-y-3">
                                           {rfqQuotes[rfq.id].map(
-                                            (quote: any) => (
+                                            (quote: Quote) => (
                                               <div
                                                 key={quote.id}
                                                 className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-3 bg-white rounded border"
@@ -845,7 +835,7 @@ export default function ProjectDetailPage({
                                         </h4>
                                         <div className="space-y-3">
                                           {rfqQuotes[rfq.id].map(
-                                            (quote: any) => (
+                                            (quote: Quote) => (
                                               <div
                                                 key={quote.id}
                                                 className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-3 bg-white rounded border"

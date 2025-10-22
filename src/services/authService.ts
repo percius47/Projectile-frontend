@@ -39,7 +39,10 @@ interface RegisterData {
 class AuthService {
   static async register(data: RegisterData): Promise<AuthResponse> {
     try {
-      return await ApiService.post<AuthResponse>("/auth/register", data);
+      return await ApiService.post<AuthResponse, RegisterData>(
+        "/auth/register",
+        data
+      );
     } catch (error) {
       // Re-throw the error to be handled by the calling function
       throw error;
@@ -48,7 +51,10 @@ class AuthService {
 
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      return await ApiService.post<AuthResponse>("/auth/login", credentials);
+      return await ApiService.post<AuthResponse, LoginCredentials>(
+        "/auth/login",
+        credentials
+      );
     } catch (error) {
       // Re-throw the error to be handled by the calling function
       throw error;
@@ -124,6 +130,7 @@ class AuthService {
       // A more robust solution would be to have a /auth/validate endpoint
       return true;
     } catch (error) {
+      console.error("Token validation failed:", error);
       this.logout();
       return false;
     }

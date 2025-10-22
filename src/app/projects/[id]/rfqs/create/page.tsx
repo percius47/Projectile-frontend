@@ -1,13 +1,14 @@
 // src/app/projects/[id]/rfqs/create/page.tsx
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import ProjectService, { Project } from "@/services/projectService";
 import RfqService, { CreateRfqData } from "@/services/rfqService";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { formatDate } from "@/utils/dateUtils";
 
 export default function CreateRfqPage({
   params,
@@ -22,11 +23,11 @@ export default function CreateRfqPage({
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [specialRequirements, setSpecialRequirements] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   // Properly unwrap params using React.use() for Next.js 15
@@ -35,13 +36,7 @@ export default function CreateRfqPage({
   );
   const projectId = parseInt(unwrappedParams.id);
 
-  useEffect(() => {
-    if (!isNaN(projectId)) {
-      fetchProject();
-    }
-  }, [projectId]);
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const response = await ProjectService.getProjectById(projectId);
       setProject(response.project);
@@ -51,7 +46,13 @@ export default function CreateRfqPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!isNaN(projectId)) {
+      fetchProject();
+    }
+  }, [projectId, fetchProject]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

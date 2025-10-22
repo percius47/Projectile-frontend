@@ -47,7 +47,11 @@ class VendorService {
   static async createVendor(data: CreateVendorData): Promise<VendorResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.post<VendorResponse>("/vendors", data, token);
+    return ApiService.post<VendorResponse, CreateVendorData>(
+      "/vendors",
+      data,
+      token
+    );
   }
 
   static async getVendorById(id: number): Promise<VendorResponse> {
@@ -74,7 +78,11 @@ class VendorService {
   ): Promise<VendorResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.put<VendorResponse>(`/vendors/${id}`, data, token);
+    return ApiService.put<VendorResponse, UpdateVendorData>(
+      `/vendors/${id}`,
+      data,
+      token
+    );
   }
 
   static async deleteVendor(id: number): Promise<{ message: string }> {

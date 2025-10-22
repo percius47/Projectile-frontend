@@ -1,27 +1,28 @@
 // src/app/quotes/[id]/page.tsx
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import QuoteService, { Quote, UpdateQuoteData } from "@/services/quoteService";
 import DocumentService, { Document } from "@/services/documentService";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { formatDate } from "@/utils/dateUtils";
 
-export default function EditQuotePage({
+export default function QuoteDetailPage({
   params,
 }: {
   params: Promise<{ id: string }> | { id: string };
 }) {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [totalAmount, setTotalAmount] = useState("");
-  const [status, setStatus] = useState("submitted");
+  const [status, setStatus] = useState<string>("draft");
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  // Add document state
+  // Document state
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -35,13 +36,7 @@ export default function EditQuotePage({
   );
   const quoteId = parseInt(unwrappedParams.id);
 
-  useEffect(() => {
-    if (!isNaN(quoteId)) {
-      fetchQuoteDetails();
-    }
-  }, [quoteId]);
-
-  const fetchQuoteDetails = async () => {
+  const fetchQuoteDetails = useCallback(async () => {
     try {
       const response = await QuoteService.getQuoteById(quoteId);
       setQuote(response.quote);
@@ -55,7 +50,7 @@ export default function EditQuotePage({
           quoteId
         );
         setDocuments(docResponse.documents);
-      } catch (docErr) {
+      } catch {
         // Not critical if documents fail to load
         setDocuments([]);
       }
@@ -68,7 +63,13 @@ export default function EditQuotePage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [quoteId]);
+
+  useEffect(() => {
+    if (!isNaN(quoteId)) {
+      fetchQuoteDetails();
+    }
+  }, [quoteId, fetchQuoteDetails]);
 
   // Add document upload handler
   const handleFileUpload = async (e: React.FormEvent) => {

@@ -1,13 +1,13 @@
 // src/app/rfqs/[id]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import RfqService, { Rfq } from "@/services/rfqService";
-import QuoteService from "@/services/quoteService";
-import DocumentService from "@/services/documentService";
+import QuoteService, { CreateQuoteData } from "@/services/quoteService";
+import DocumentService, { Document } from "@/services/documentService";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -36,13 +36,7 @@ export default function RfqDetailPage({
   );
   const rfqId = parseInt(unwrappedParams.id);
 
-  useEffect(() => {
-    if (!isNaN(rfqId)) {
-      fetchRfqDetails();
-    }
-  }, [rfqId]);
-
-  const fetchRfqDetails = async () => {
+  const fetchRfqDetails = useCallback(async () => {
     try {
       const response = await RfqService.getRfqById(rfqId);
       setRfq(response.rfq);
@@ -63,7 +57,7 @@ export default function RfqDetailPage({
           rfqId
         );
         setDocuments(docResponse.documents);
-      } catch (docErr) {
+      } catch {
         // Not critical if documents fail to load
         setDocuments([]);
       }
@@ -76,7 +70,13 @@ export default function RfqDetailPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [rfqId, user, router]);
+
+  useEffect(() => {
+    if (!isNaN(rfqId)) {
+      fetchRfqDetails();
+    }
+  }, [rfqId, fetchRfqDetails]);
 
   // Add document upload handler
   const handleFileUpload = async (e: React.FormEvent) => {

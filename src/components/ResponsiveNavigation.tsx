@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import MobileDrawer from "@/components/MobileDrawer";
 
 interface NavigationItem {
@@ -19,19 +18,14 @@ interface ResponsiveNavigationProps {
   } | null;
   onLogout: () => void;
   navigationItems: NavigationItem[];
-  projectName?: string;
-  projectId?: number;
 }
 
 export default function ResponsiveNavigation({
   user,
   onLogout,
   navigationItems,
-  projectName,
-  projectId,
 }: ResponsiveNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);

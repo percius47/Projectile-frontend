@@ -36,7 +36,6 @@ export default function MobileNavigation({
     pathname.includes("/projects/") &&
     !pathname.includes("/rfqs/") &&
     !pathname.includes("/requirements/");
-  const isRfqActive = pathname.includes("/rfqs/");
   const isProfileActive = pathname === "/vendors/profile";
 
   return (

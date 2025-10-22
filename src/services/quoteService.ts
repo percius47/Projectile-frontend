@@ -62,7 +62,11 @@ class QuoteService {
   static async createQuote(data: CreateQuoteData): Promise<QuoteResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.post<QuoteResponse>("/quotes", data, token);
+    return ApiService.post<QuoteResponse, CreateQuoteData>(
+      "/quotes",
+      data,
+      token
+    );
   }
 
   static async getQuoteById(id: number): Promise<QuoteResponse> {
@@ -95,7 +99,11 @@ class QuoteService {
   ): Promise<QuoteResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.put<QuoteResponse>(`/quotes/${id}`, data, token);
+    return ApiService.put<QuoteResponse, UpdateQuoteData>(
+      `/quotes/${id}`,
+      data,
+      token
+    );
   }
 
   static async deleteQuote(id: number): Promise<{ message: string }> {

@@ -1,7 +1,7 @@
 // src/app/projects/[id]/rfq/[rfqId]/page.tsx
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,12 +13,10 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import VendorDetailsModal from "@/components/VendorDetailsModal";
 import { formatDate } from "@/utils/dateUtils";
 
-export default function RfqDetailWithQuotesPage({
+export default function RfqDetailPage({
   params,
 }: {
-  params:
-    | Promise<{ id: string; rfqId: string }>
-    | { id: string; rfqId: string };
+  params: Promise<{ id: string; rfqId: string }> | { id: string; rfqId: string };
 }) {
   const [project, setProject] = useState<Project | null>(null);
   const [rfq, setRfq] = useState<Rfq | null>(null);
@@ -27,15 +25,16 @@ export default function RfqDetailWithQuotesPage({
   const [error, setError] = useState("");
   const [selectedQuoteId, setSelectedQuoteId] = useState<number | null>(null);
 
-  // Vendor details modal state
-  const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
-  const [selectedVendorDetails, setSelectedVendorDetails] =
-    useState<Quote["vendor_details"]>(undefined);
-
-  // Add document state
+  // Document state
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
+
+  // Vendor details modal state
+  const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState<
+    Quote["vendor_details"]
+  >(undefined);
 
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -47,13 +46,7 @@ export default function RfqDetailWithQuotesPage({
   const projectId = parseInt(unwrappedParams.id);
   const rfqId = parseInt(unwrappedParams.rfqId);
 
-  useEffect(() => {
-    if (!isNaN(projectId) && !isNaN(rfqId)) {
-      fetchData();
-    }
-  }, [projectId, rfqId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch project details
       const projectResponse = await ProjectService.getProjectById(projectId);
@@ -74,7 +67,7 @@ export default function RfqDetailWithQuotesPage({
           rfqId
         );
         setDocuments(docResponse.documents);
-      } catch (docErr) {
+      } catch {
         // Not critical if documents fail to load
         setDocuments([]);
       }
@@ -85,7 +78,13 @@ export default function RfqDetailWithQuotesPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, rfqId]);
+
+  useEffect(() => {
+    if (!isNaN(projectId) && !isNaN(rfqId)) {
+      fetchData();
+    }
+  }, [projectId, rfqId, fetchData]);
 
   const handleAwardQuote = async (quoteId: number) => {
     if (window.confirm("Are you sure you want to award this quote?")) {

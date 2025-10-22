@@ -1,8 +1,9 @@
 // src/app/vendors/profile/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import UserService, { User } from "@/services/userService";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -10,12 +11,6 @@ import ResponsiveNavigation from "@/components/ResponsiveNavigation";
 
 export default function VendorProfilePage() {
   const [vendor, setVendor] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  // Form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -23,17 +18,15 @@ export default function VendorProfilePage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [gstNumber, setGstNumber] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (user) {
-      fetchVendorProfile();
-    }
-  }, [user]);
-
-  const fetchVendorProfile = async () => {
+  const fetchVendorProfile = useCallback(async () => {
     try {
       const response = await UserService.getUserById(user!.id);
       setVendor(response.user);
@@ -55,7 +48,13 @@ export default function VendorProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchVendorProfile();
+    }
+  }, [user, fetchVendorProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

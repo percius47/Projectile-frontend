@@ -58,7 +58,7 @@ export default function TestAuthPage() {
               <ol className="list-decimal list-inside mt-2 space-y-1">
                 <li>Refresh this page</li>
                 <li>You should remain logged in</li>
-                <li>If you get redirected to login, there's an issue</li>
+                <li>If you get redirected to login, there&apos;s an issue</li>
               </ol>
             </div>
           </div>

@@ -92,7 +92,7 @@ class DocumentService {
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
-      } catch (e) {
+      } catch {
         // If we can't parse JSON, use status text
         errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       }

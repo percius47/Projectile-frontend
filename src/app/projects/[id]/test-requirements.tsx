@@ -1,17 +1,13 @@
 // Test component to verify requirements functionality
-import { useEffect, useState } from "react";
-import RequirementService from "@/services/requirementService";
+import { useEffect, useState, useCallback } from "react";
+import RequirementService, { Requirement } from "@/services/requirementService";
 
 export default function TestRequirements({ projectId }: { projectId: number }) {
-  const [requirements, setRequirements] = useState<any[]>([]);
+  const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchRequirements();
-  }, [projectId]);
-
-  const fetchRequirements = async () => {
+  const fetchRequirements = useCallback(async () => {
     try {
       const response = await RequirementService.getRequirementsByProjectId(
         projectId
@@ -25,7 +21,11 @@ export default function TestRequirements({ projectId }: { projectId: number }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchRequirements();
+  }, [projectId, fetchRequirements]);
 
   if (loading) return <div>Loading requirements...</div>;
   if (error) return <div>Error: {error}</div>;

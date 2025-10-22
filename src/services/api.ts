@@ -2,9 +2,9 @@
 const LOCAL_API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
-const NETWORK_API_BASE_URL =
-  process.env.NEXT_PUBLIC_NETWORK_API_BASE_URL ||
-  "http://192.168.0.101:3001/api";
+// const NETWORK_API_BASE_URL =  // Commented out as it's not used
+//   process.env.NEXT_PUBLIC_NETWORK_API_BASE_URL ||
+//   "http://192.168.0.101:3001/api";
 
 // Determine which API base URL to use based on the environment
 const getApiBaseUrl = () => {
@@ -63,7 +63,7 @@ class ApiService {
         try {
           const errorData: ApiError = await response.json();
           errorMessage = errorData.message || errorMessage;
-        } catch (e) {
+        } catch {
           // If we can't parse the error response, use the status text
           errorMessage = response.statusText || errorMessage;
         }
@@ -97,9 +97,9 @@ class ApiService {
     return this.request<T>(endpoint, { headers });
   }
 
-  static async post<T>(
+  static async post<T, D = Record<string, unknown>>(
     endpoint: string,
-    data: any,
+    data: D,
     token?: string
   ): Promise<T> {
     const headers: HeadersInit = {
@@ -116,7 +116,11 @@ class ApiService {
     });
   }
 
-  static async put<T>(endpoint: string, data: any, token?: string): Promise<T> {
+  static async put<T, D = Record<string, unknown>>(
+    endpoint: string,
+    data: D,
+    token?: string
+  ): Promise<T> {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };

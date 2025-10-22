@@ -49,7 +49,11 @@ class RequirementService {
   ): Promise<RequirementResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.post<RequirementResponse>("/requirements", data, token);
+    return ApiService.post<RequirementResponse, CreateRequirementData>(
+      "/requirements",
+      data,
+      token
+    );
   }
 
   static async getRequirementsByProjectId(
@@ -75,7 +79,7 @@ class RequirementService {
   ): Promise<RequirementResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.put<RequirementResponse>(
+    return ApiService.put<RequirementResponse, UpdateRequirementData>(
       `/requirements/${id}`,
       data,
       token

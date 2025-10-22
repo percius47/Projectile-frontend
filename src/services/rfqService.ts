@@ -52,7 +52,7 @@ class RfqService {
   static async createRfq(data: CreateRfqData): Promise<RfqResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.post<RfqResponse>("/rfqs", data, token);
+    return ApiService.post<RfqResponse, CreateRfqData>("/rfqs", data, token);
   }
 
   static async getRfqById(id: number): Promise<RfqResponse> {
@@ -96,7 +96,11 @@ class RfqService {
   ): Promise<RfqResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.put<RfqResponse>(`/rfqs/${id}`, data, token);
+    return ApiService.put<RfqResponse, UpdateRfqData>(
+      `/rfqs/${id}`,
+      data,
+      token
+    );
   }
 
   static async deleteRfq(id: number): Promise<{ message: string }> {

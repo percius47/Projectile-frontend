@@ -1,7 +1,7 @@
 // src/app/vendors/dashboard/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,23 +10,21 @@ import RfqService, { Rfq } from "@/services/rfqService";
 import QuoteService, { Quote } from "@/services/quoteService";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ResponsiveNavigation from "@/components/ResponsiveNavigation";
+import ResponsiveCard from "@/components/ResponsiveCard";
+import ResponsiveButton from "@/components/ResponsiveButton";
 import { formatDate } from "@/utils/dateUtils";
 
 export default function VendorDashboardPage() {
   const [vendor, setVendor] = useState<Vendor | null>(null);
-  const [openRfqs, setOpenRfqs] = useState<Rfq[]>([]);
   const [vendorQuotes, setVendorQuotes] = useState<Quote[]>([]);
+  const [openRfqs, setOpenRfqs] = useState<Rfq[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    fetchVendorData();
-  }, []);
-
-  const fetchVendorData = async () => {
+  const fetchVendorData = useCallback(async () => {
     try {
       // Get vendor profile
       const vendorResponse = await VendorService.getVendorByUserId(
@@ -53,7 +51,11 @@ export default function VendorDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchVendorData();
+  }, [fetchVendorData]);
 
   const handleLogout = () => {
     logout();

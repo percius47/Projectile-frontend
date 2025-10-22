@@ -44,7 +44,11 @@ class UserService {
   ): Promise<UserResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.put<UserResponse>(`/users/${id}`, data, token);
+    return ApiService.put<UserResponse, UpdateUserData>(
+      `/users/${id}`,
+      data,
+      token
+    );
   }
 }
 

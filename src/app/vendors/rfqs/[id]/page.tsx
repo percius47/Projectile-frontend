@@ -1,7 +1,7 @@
 // src/app/vendors/rfqs/[id]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,16 +21,12 @@ export default function RfqDetailPage({ params }: { params: { id: string } }) {
 
   const { user, logout } = useAuth();
   const router = useRouter();
-  const rfqId = parseInt(params.id);
+  const unwrappedParams = use(
+    params instanceof Promise ? params : Promise.resolve(params)
+  );
+  const rfqId = parseInt(unwrappedParams.id);
 
-  useEffect(() => {
-    if (!isNaN(rfqId)) {
-      fetchRfqDetails();
-      fetchVendorDetails();
-    }
-  }, [rfqId]);
-
-  const fetchRfqDetails = async () => {
+  const fetchRfqDetails = useCallback(async () => {
     try {
       const response = await RfqService.getRfqById(rfqId);
       setRfq(response.rfq);
@@ -39,12 +35,10 @@ export default function RfqDetailPage({ params }: { params: { id: string } }) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch RFQ details"
       );
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [rfqId]);
 
-  const fetchVendorDetails = async () => {
+  const fetchVendorDetails = useCallback(async () => {
     try {
       const response = await VendorService.getVendorByUserId(user?.id || 0);
       setVendor(response.vendor);
@@ -53,7 +47,14 @@ export default function RfqDetailPage({ params }: { params: { id: string } }) {
         err instanceof Error ? err.message : "Failed to fetch vendor details"
       );
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!isNaN(rfqId)) {
+      fetchRfqDetails();
+      fetchVendorDetails();
+    }
+  }, [rfqId, fetchRfqDetails, fetchVendorDetails]);
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();

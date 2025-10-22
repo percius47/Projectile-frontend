@@ -42,7 +42,11 @@ class ProjectService {
   ): Promise<ProjectResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.post<ProjectResponse>("/projects", data, token);
+    return ApiService.post<ProjectResponse, CreateProjectData>(
+      "/projects",
+      data,
+      token
+    );
   }
 
   static async getProjects(): Promise<ProjectsResponse> {
@@ -63,7 +67,11 @@ class ProjectService {
   ): Promise<ProjectResponse> {
     const token = AuthService.getToken();
     if (!token) throw new Error("Authentication required");
-    return ApiService.put<ProjectResponse>(`/projects/${id}`, data, token);
+    return ApiService.put<ProjectResponse, UpdateProjectData>(
+      `/projects/${id}`,
+      data,
+      token
+    );
   }
 
   static async deleteProject(id: number): Promise<{ message: string }> {

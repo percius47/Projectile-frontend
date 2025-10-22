@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,11 +25,7 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch data based on user role
       if (user?.role === "project_owner") {
@@ -43,6 +39,7 @@ export default function DashboardPage() {
           );
           setVendorQuotes(quotesResponse.quotes);
         } catch (quotesError) {
+          console.error("Failed to fetch quotes:", quotesError);
           setVendorQuotes([]);
         }
 
@@ -55,6 +52,7 @@ export default function DashboardPage() {
           );
           setOpenRfqs(openRfqs);
         } catch (rfqsError) {
+          console.error("Failed to fetch RFQs:", rfqsError);
           setOpenRfqs([]);
         }
 
@@ -63,6 +61,7 @@ export default function DashboardPage() {
           const closedRfqsResponse = await RfqService.getClosedRfqs();
           setClosedRfqs(closedRfqsResponse.rfqs);
         } catch (closedRfqsError) {
+          console.error("Failed to fetch closed RFQs:", closedRfqsError);
           setClosedRfqs([]);
         }
       }
@@ -73,7 +72,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleLogout = () => {
     logout();
@@ -178,7 +181,8 @@ export default function DashboardPage() {
                       ).length === 0 ? (
                         <div className="text-center py-4">
                           <p className="text-gray-500">
-                            You haven't submitted any quotes for open RFQs yet.
+                            You haven&apos;t submitted any quotes for open RFQs
+                            yet.
                           </p>
                         </div>
                       ) : (

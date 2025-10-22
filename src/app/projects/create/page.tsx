@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import ProjectService, { CreateProjectData } from "@/services/projectService";
 import ProtectedRoute from "@/components/ProtectedRoute";

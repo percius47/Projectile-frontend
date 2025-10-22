@@ -1,14 +1,15 @@
 // src/app/projects/[id]/requirements/[reqId]/page.tsx
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import RequirementService, { Requirement } from "@/services/requirementService";
 import ProjectService, { Project } from "@/services/projectService";
+import RequirementService, { Requirement } from "@/services/requirementService";
 import DocumentService, { Document } from "@/services/documentService";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { formatDate } from "@/utils/dateUtils";
 
 export default function RequirementDetailPage({
   params,
@@ -37,13 +38,7 @@ export default function RequirementDetailPage({
   const projectId = parseInt(unwrappedParams.id);
   const requirementId = parseInt(unwrappedParams.reqId);
 
-  useEffect(() => {
-    if (!isNaN(projectId) && !isNaN(requirementId)) {
-      fetchData();
-    }
-  }, [projectId, requirementId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch project details
       const projectResponse = await ProjectService.getProjectById(projectId);
@@ -62,7 +57,7 @@ export default function RequirementDetailPage({
           requirementId
         );
         setDocuments(docResponse.documents);
-      } catch (docErr) {
+      } catch {
         // Not critical if documents fail to load
         setDocuments([]);
       }
@@ -73,7 +68,13 @@ export default function RequirementDetailPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, requirementId]);
+
+  useEffect(() => {
+    if (!isNaN(projectId) && !isNaN(requirementId)) {
+      fetchData();
+    }
+  }, [projectId, requirementId, fetchData]);
 
   // Document upload handler
   const handleFileUpload = async (e: React.FormEvent) => {

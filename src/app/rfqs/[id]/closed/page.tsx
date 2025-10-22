@@ -1,13 +1,13 @@
 // src/app/rfqs/[id]/closed/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import RfqService, { Rfq } from "@/services/rfqService";
-import QuoteService from "@/services/quoteService";
-import DocumentService from "@/services/documentService";
+import QuoteService, { Quote } from "@/services/quoteService";
+import DocumentService, { Document } from "@/services/documentService";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -31,13 +31,7 @@ export default function ClosedRfqDetailPage({
   );
   const rfqId = parseInt(unwrappedParams.id);
 
-  useEffect(() => {
-    if (!isNaN(rfqId)) {
-      fetchRfqDetails();
-    }
-  }, [rfqId]);
-
-  const fetchRfqDetails = async () => {
+  const fetchRfqDetails = useCallback(async () => {
     try {
       // Fetch RFQ details
       const rfqResponse = await RfqService.getRfqById(rfqId);
@@ -50,7 +44,7 @@ export default function ClosedRfqDetailPage({
           rfqId
         );
         setDocuments(docResponse.documents);
-      } catch (docErr) {
+      } catch {
         // Not critical if documents fail to load
         setDocuments([]);
       }
@@ -70,10 +64,10 @@ export default function ClosedRfqDetailPage({
           }
 
           setVendorQuote(vendorQuote || null);
-        } catch (quoteErr) {
+        } catch {
           // Handle case where vendor has no quote for this RFQ
           // This is not an error, it just means the vendor didn't submit a quote
-          console.log("No quote found for this vendor:", quoteErr);
+          console.log("No quote found for this vendor");
           setVendorQuote(null);
         }
       }
@@ -86,7 +80,13 @@ export default function ClosedRfqDetailPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [rfqId, user]);
+
+  useEffect(() => {
+    if (!isNaN(rfqId)) {
+      fetchRfqDetails();
+    }
+  }, [rfqId, fetchRfqDetails]);
 
   // Add document download handler
   const handleDownloadDocument = async (documentId: number) => {
