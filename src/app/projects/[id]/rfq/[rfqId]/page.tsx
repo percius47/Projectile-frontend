@@ -16,7 +16,9 @@ import { formatDate } from "@/utils/dateUtils";
 export default function RfqDetailPage({
   params,
 }: {
-  params: Promise<{ id: string; rfqId: string }> | { id: string; rfqId: string };
+  params:
+    | Promise<{ id: string; rfqId: string }>
+    | { id: string; rfqId: string };
 }) {
   const [project, setProject] = useState<Project | null>(null);
   const [rfq, setRfq] = useState<Rfq | null>(null);
@@ -32,9 +34,8 @@ export default function RfqDetailPage({
 
   // Vendor details modal state
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
-  const [selectedVendorDetails, setSelectedVendorDetails] = useState<
-    Quote["vendor_details"]
-  >(undefined);
+  const [selectedVendorDetails, setSelectedVendorDetails] =
+    useState<Quote["vendor_details"]>(undefined);
 
   const { user, logout } = useAuth();
   const router = useRouter();

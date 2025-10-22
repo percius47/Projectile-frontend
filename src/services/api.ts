@@ -2,24 +2,20 @@
 const LOCAL_API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
-// const NETWORK_API_BASE_URL =  // Commented out as it's not used
-//   process.env.NEXT_PUBLIC_NETWORK_API_BASE_URL ||
-//   "http://192.168.0.101:3001/api";
+const NETWORK_API_BASE_URL =
+  process.env.NEXT_PUBLIC_NETWORK_API_BASE_URL ||
+  "http://192.168.0.101:3001/api";
 
 // Determine which API base URL to use based on the environment
 const getApiBaseUrl = () => {
-  // On the server side, always use the local API URL
+  // On the server side, always use the configured API URL
   if (typeof window === "undefined") {
     return LOCAL_API_BASE_URL;
   }
 
-  // On the client side, use the current hostname and port for API calls
-  // This allows the app to work both on localhost and network devices
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const apiPort = "3001"; // API port is fixed
-
-  return `${protocol}//${hostname}:${apiPort}/api`;
+  // On the client side, use the configured API URL directly
+  // This allows the app to work both on localhost and in production
+  return LOCAL_API_BASE_URL;
 };
 
 const API_BASE_URL = getApiBaseUrl();
